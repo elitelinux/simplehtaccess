@@ -1,7 +1,7 @@
 ################################################################
 #Writed by elitelinux
 #Distributed under a GPLv3
-#Code original from www.cespica.com
+#Code original from localhost
 #Put this in your server under your own risk this scrip make 
 #your security better but only works under linux/apache servers
 # This script make crashes in IIS or another servers!
@@ -9,7 +9,7 @@
 ##----------------------------------------------------------
 #Redireccionar en caso de ser necesario
 ##----------------------------------------------------------
-#Redirect 301 /old.php http://www.cespica.com/new.php
+#Redirect 301 /old.php http://www.localhost.com/new.php
 ##----------------------------------------------------------
 #Seguridad extra para .HTACCESS
 ##----------------------------------------------------------
@@ -91,9 +91,9 @@ SetEnv TZ America/Bogota
 #Correo del Sitio
 ##----------------------------------------------------------
 ServerSignature EMail
-SetEnv SERVER_ADMIN info@cespica.com
-SetEnv SITE_WEBMASTER "Cespica"
-SetEnv SITE_WEBMASTER_URI mailto:info@cespica.com
+SetEnv SERVER_ADMIN info@localhost
+SetEnv SITE_WEBMASTER "localhost"
+SetEnv SITE_WEBMASTER_URI mailto:info@localhost
 ##----------------------------------------------------------
 #Protección de Ataques SQL Injection
 ##----------------------------------------------------------
@@ -134,10 +134,10 @@ RewriteRule .* - [F]
 ##----------------------------------------------------------
 RewriteEngine on
 RewriteCond %{HTTP_REFERER} !^$
-RewriteCond %{HTTP_REFERER} !^http://(www\.)?cespica.com/.*$ [NC]
+RewriteCond %{HTTP_REFERER} !^http://(www\.)?localhost.com/.*$ [NC]
 RewriteCond %{HTTP_USER_AGENT} !(googlebot-image|msnbot|psbot|yahoo-mmcrawler|cavalla_bot) [NC]
 #RewriteRule \.(gif|jpg)$ - [F]
-#RewriteRule \.(gif|jpg)$ http://www.cespica.com/nomerobeslasimagenesnoseasHP.gif [R,L]
+#RewriteRule \.(gif|jpg)$ http://www.localhost.com/nomerobeslasimagenesnoseasHP.gif [R,L]
 ##----------------------------------------------------------
 ## Denegar el acceso a bots
 ##----------------------------------------------------------
@@ -422,9 +422,9 @@ Header append Vary User-Agent
 ##----------------------------------------------------------
 #Administrador Joomla con SSL
 ##----------------------------------------------------------
-#Redirect /@ http://www.cespica.com/administrator/
-#Redirect /i http://www.cespica.com/administrator/index.php?option=com_installer
-#Redirect /c http://www.cespica.com/administrator/index.php?option=com_config
+#Redirect /@ http://www.localhost.com/administrator/
+#Redirect /i http://www.localhost.com/administrator/index.php?option=com_installer
+#Redirect /c http://www.localhost.com/administrator/index.php?option=com_config
 ##----------------------------------------------------------
 #bloquear dominios que refieren el sitio
 ##----------------------------------------------------------
@@ -435,19 +435,19 @@ Header append Vary User-Agent
 #poner www al dominio
 ##----------------------------------------------------------
 RewriteEngine On
-RewriteCond %{HTTP_HOST} ^cespica\.com$ [NC]
-RewriteRule ^(.*)$ http://www.cespica.com/$1 [R=301,L]
+RewriteCond %{HTTP_HOST} ^localhost\.com$ [NC]
+RewriteRule ^(.*)$ http://www.localhost.com/$1 [R=301,L]
 ##----------------------------------------------------------
 #quitar www al dominio
 ##----------------------------------------------------------
 #RewriteEngine on
 #RewriteBase /
-#RewriteCond %{HTTP_HOST} ^www.cespica.com$ [NC]
-#RewriteRule (.*) http://yoursite.com/$1 [R=301,L]
+#RewriteCond %{HTTP_HOST} ^www.localhost.com$ [NC]
+#RewriteRule (.*) http://localhost.com/$1 [R=301,L]
 ##----------------------------------------------------------
 #redireccionar a otros lugares
 ##----------------------------------------------------------
-#Redirect /$carpeta http://www.cespica.com/$
+#Redirect /$carpeta http://www.localhost.com/$
 ##----------------------------------------------------------
 # Compresión Gzip
 ##----------------------------------------------------------
