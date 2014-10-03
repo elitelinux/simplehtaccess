@@ -1,0 +1,511 @@
+################################################################
+#Writed by elitelinux
+#Distributed under a GPLv3
+#Code original from www.cespica.com
+#Put this in your server under your own risk this scrip make 
+#your security better but only works under linux/apache servers
+# This script make crashes in IIS or another servers!
+#Juan Fernando Villa Hernández
+##----------------------------------------------------------
+#Redireccionar en caso de ser necesario
+##----------------------------------------------------------
+#Redirect 301 /old.php http://www.cespica.com/new.php
+##----------------------------------------------------------
+#Seguridad extra para .HTACCESS
+##----------------------------------------------------------
+<files .htaccess>
+order allow,deny
+deny from all
+</files>
+##----------------------------------------------------------
+#Bloquear IPs de ser necesario o habilitar solo las indicadas
+##----------------------------------------------------------
+#order allow,deny
+#deny from 18.52.3.5
+#deny from 18.132.152
+#deny from 24.2
+#allow from all
+#habilitar
+#order allow,deny
+#allow from 123.456.789.012
+#deny from all
+##----------------------------------------------------------
+# Deshabilitar la firma del servidor
+##----------------------------------------------------------
+ServerSignature off 
+##----------------------------------------------------------
+#Seguridad extra para PHP pero ojo puede haber problemas con 
+#algunos scripts especialmente los de subidas de archivos o 
+#correo masivo, tambien scriptmaliciosos entre otros
+#usar con cuidado te puede generar un error 500 si esto sucede
+#vuelve y comenta la opción con el caracter "#"
+##----------------------------------------------------------
+#php_flag safe_mode off  
+#php_flag expose_php off  
+#php_flag display_errors off  
+php_flag allow_url_fopen  off
+#php_flag register_globals off
+#php_flag allow_url_include off
+php_flag disable_functions off
+#php_flag memory_limit = 64M
+#php_flag max_execution_time = 18000
+#php_flag magic_quotes_gpc = 0
+#php_flag magic_quotes_runtime = 0
+#php_flag magic_quotes_sybase = 0
+#php_flag session.auto_start = off
+#php_flag zlib.output_compression = on
+#php_flag suhosin.session.cryptua = off
+#php_flag zend.ze1_compatibility_mode = off
+##----------------------------------------------------------
+#Manejo de errores de Apache. Cuando se produzca uno de 
+#estos errores, redirigimos a una pagina especial
+#desarrollada por nosotros.  
+#ErrorDocument 401 /noautorizado.php
+#ErrorDocument 404 /noencontrado.php
+#ErrorDocument 403 /prohibido.php
+#ErrorDocument 500 /error.php
+##----------------------------------------------------------
+ErrorDocument 401 /index.php
+ErrorDocument 403 /index.php  
+ErrorDocument 404 /index.php  
+ErrorDocument 500 /index.php
+##----------------------------------------------------------
+#Modo motor de reescritura 
+##----------------------------------------------------------
+RewriteEngine On
+##----------------------------------------------------------
+# Definiendo el idioma
+##----------------------------------------------------------
+DefaultLanguage es-ES
+##----------------------------------------------------------
+#Agregar manejo de extensiones puede causar problemas de
+#compatibilidad en maquinas Plesk
+##----------------------------------------------------------
+#addhandler x-httpd-php5-cgi .php5
+#addhandler x-httpd-php5-cgi .php
+##----------------------------------------------------------
+#Cuadrar el Tiempo
+##----------------------------------------------------------
+SetEnv TZ America/Bogota
+##----------------------------------------------------------
+#Correo del Sitio
+##----------------------------------------------------------
+ServerSignature EMail
+SetEnv SERVER_ADMIN info@cespica.com
+SetEnv SITE_WEBMASTER "Cespica"
+SetEnv SITE_WEBMASTER_URI mailto:info@cespica.com
+##----------------------------------------------------------
+#Protección de Ataques SQL Injection
+##----------------------------------------------------------
+RewriteEngine On     
+Options +FollowSymLinks  
+RewriteCond %{HTTP_USER_AGENT} ^$ [OR]  
+RewriteCond %{HTTP_USER_AGENT} ^(-|\.|') [OR]  
+RewriteCond %{HTTP_USER_AGENT} ^(.*)(<|>|%3C|%3E)(.*) [NC,OR]  
+RewriteCond %{HTTP_USER_AGENT} ^(java|curl|wget)(.*) [NC,OR]  
+RewriteCond %{HTTP_USER_AGENT} ^(.*)(libwww-perl|libwwwperl|snoopy|curl|wget|winhttp|python|nikto|scan|clshttp|archiver|loader|email|harvest|fetch|extract|grab|miner|suck|reaper|leach)(.*) [NC,OR]  
+RewriteCond %{REQUEST_URI} ^(/,|/;|/<|/>|/'|/`|/%2C|/%3C|/%3E|/%27|/////) [NC,OR]  
+RewriteCond %{HTTP_REFERER} ^(.*)(%00|%08|%09|%0A|%0B|%0C|%0D|%0E|%0F|%2C|<|>|'|%3C|%3E|%26%23|%27|%60)(.*) [NC,OR]  
+RewriteCond %{QUERY_STRING} ^(.*)(%00|%08|%09|%0A|%0B|%0C|%0D|%0E|%0F|%2C|%3C|%3E|%27|%26%23|%60)(.*) [NC,OR]  
+RewriteCond %{QUERY_STRING} ^(.*)('|-|<|>|,|/|\\|\.a|\.c|\.t|\.d|\.p|\.i|\.e|\.j)(.*) [NC,OR]  
+RewriteCond %{HTTP_COOKIE} ^(.*)(<|>|'|%3C|%3E|%27)(.*) [NC]  
+RewriteRule ^(.*)$ index.php [NC]  
+##----------------------------------------------------------
+#Protección Anti-XSS
+##----------------------------------------------------------
+Options +FollowSymLinks
+RewriteEngine On 
+RewriteCond %{QUERY_STRING} base64_encode.*\(.*\) [OR]
+RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} (\<|%3C).*iframe.*(\>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+RewriteRule ^(.*)$ index_error.php [F,L]
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+RewriteRule .* - [F]
+##----------------------------------------------------------
+#Protección Anti-XSS Tracing
+##----------------------------------------------------------
+RewriteEngine On 
+RewriteCond %{REQUEST_METHOD} ^TRACE 
+RewriteRule .* - [F] 
+##----------------------------------------------------------
+#Prevenir Robo de Información ó Hotlink
+##----------------------------------------------------------
+RewriteEngine on
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http://(www\.)?cespica.com/.*$ [NC]
+RewriteCond %{HTTP_USER_AGENT} !(googlebot-image|msnbot|psbot|yahoo-mmcrawler|cavalla_bot) [NC]
+#RewriteRule \.(gif|jpg)$ - [F]
+#RewriteRule \.(gif|jpg)$ http://www.cespica.com/nomerobeslasimagenesnoseasHP.gif [R,L]
+##----------------------------------------------------------
+## Denegar el acceso a bots
+##----------------------------------------------------------
+##redireccionar a los robots a otra web  
+RewriteEngine On 
+RewriteBase / 
+RewriteCond %{HTTP_USER_AGENT} ^Anarchie [OR]  
+RewriteCond %{HTTP_USER_AGENT} ^ASPSeek [OR]  
+RewriteCond %{HTTP_USER_AGENT} ^attach [OR]  
+RewriteCond %{HTTP_USER_AGENT} ^autoemailspider [OR]
+RewriteCond %{HTTP_USER_AGENT} ^BlackWidow [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Bot\ mailto:craftbot@yahoo.com [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^ChinaClaw [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Custo [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^DISCo [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Download\ Demon [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^eCatch [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^EirGrabber [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^EmailSiphon [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^EmailWolf [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Express\ WebPictures [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^ExtractorPro [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^EyeNetIE [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^FlashGet [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^GetRight [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^GetWeb! [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Go!Zilla [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Go-Ahead-Got-It [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^GrabNet [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Grafula [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^HMView [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^HTTrack [NC,OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Image\ Stripper [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Image\ Sucker [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Indy\ Library [NC,OR] 
+RewriteCond %{HTTP_USER_AGENT} ^InterGET [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Internet\ Ninja [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^JetCar [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^JOC\ Web\ Spider [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^larbin [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^LeechFTP [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Mass\ Downloader [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^MIDown\ tool [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Mister\ PiX [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Navroad [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^NearSite [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^NetAnts [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^NetSpider [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Net\ Vampire [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^NetZIP [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Octopus [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Offline\ Explorer [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Offline\ Navigator [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^PageGrabber [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Papa\ Foto [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^pavuk [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^pcBrowser [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^RealDownload [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^ReGet [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^SiteSnagger [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^SmartDownload [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^SuperBot [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^SuperHTTP [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Surfbot [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^tAkeOut [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Teleport\ Pro [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^VoidEYE [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Web\ Image\ Collector [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Web\ Sucker [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebAuto [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebCopier [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebFetch [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebGo\ IS [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebLeacher [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebReaper [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebSauger [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Website\ eXtractor [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Website\ Quester [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebStripper [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebWhacker [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WebZIP [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Wget [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Widow [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^WWWOFFLE [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Xaldon\ WebSpider [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Xenu [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Zeus.*Webster [OR] 
+RewriteCond %{HTTP_USER_AGENT} ^Zeus  
+RewriteRule ^.* - [F,L]
+##----------------------------------------------------------
+## protegerse de Trolls y Spammers
+##----------------------------------------------------------
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} POST
+RewriteCond %{REQUEST_URI} .*post*\.php*[OR]
+RewriteCond %{REQUEST_URI} .*comments*\.php*[OR]
+RewriteCond %{HTTP_REFERER} !.*cespica.* [OR]
+RewriteCond %{HTTP_USER_AGENT} ^$
+RewriteRule (.*) ^http://%{REMOTE_ADDR}/$ [R=301,L] 
+##----------------------------------------------------------
+# Protegerse contra los ataques DOS limitando el tamaño de 
+#subida de archivos a 10 megas en este caso 10240000 bytes
+##----------------------------------------------------------
+LimitRequestBody 10240000
+##----------------------------------------------------------
+#Permite el uso de Webfonts
+##----------------------------------------------------------
+<FilesMatch "\.(ttf|ttc|otf|eot|woff|font.css)$">
+  <IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+  </IfModule>
+</FilesMatch>
+##----------------------------------------------------------
+#Seguir links simbolicos.
+##----------------------------------------------------------
+Options +FollowSymLinks
+##----------------------------------------------------------
+#Bloquear cualquier script que este tratando de codificar 
+#base64 sin una URL.
+##----------------------------------------------------------
+RewriteCond %{QUERY_STRING} base64_encode[^(]*\([^)]*\) [OR]
+##----------------------------------------------------------
+#Bloquear cualquier script que incluya la etiqueta <script> 
+#en la URL.
+##----------------------------------------------------------
+RewriteCond %{QUERY_STRING} (<|%3C)([^s]*s)+cript.*(>|%3E) [NC,OR]
+##----------------------------------------------------------
+#Bloquear cualquier script que intente configurar la variable
+#PHP GLOBALS a traves de la URL.
+##----------------------------------------------------------
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+##----------------------------------------------------------
+#Bloquear cualquier script que intente modificar una variable
+#_REQUEST a traves de la URL.
+##----------------------------------------------------------
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+##----------------------------------------------------------
+#Retornar una petición bajo 403 Prohibido y mostrar el contenido
+#de inicio.
+##----------------------------------------------------------
+RewriteRule .* index.php [F]
+##----------------------------------------------------------
+#base de escritura
+##----------------------------------------------------------
+# RewriteBase /
+##----------------------------------------------------------
+#base SEF
+##----------------------------------------------------------
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+##----------------------------------------------------------
+#Si la ruta requerida no es /index.php y esta no se ha concluido
+##----------------------------------------------------------
+RewriteCond %{REQUEST_URI} !^/index\.php
+##----------------------------------------------------------
+#Si la ruta requerida no tiene extension asignarle una segun
+#componente con la siguiente lista
+##----------------------------------------------------------
+RewriteCond %{REQUEST_URI} /component/|(/[^.]*|\.(php|html?|feed|pdf|vcf|raw|doc|xls|ppt))$ [NC]
+##----------------------------------------------------------
+#Si la ruta requerida no es igual asignarle una segun
+#archivo fisico y extensión
+##----------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME} !-f
+##----------------------------------------------------------
+#Si la ruta requerida no es igual asignarle una segun
+#carpeta
+##----------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME} !-d
+##----------------------------------------------------------
+#internamente reescribir el requerimiento a el script index.php
+##----------------------------------------------------------
+RewriteRule .* index.php [L]
+##----------------------------------------------------------
+#Normalizar el tipo estandar de las extensiones
+##----------------------------------------------------------
+#Javascript
+AddType application/javascript         js
+# Audio
+AddType audio/ogg                      oga ogg
+AddType audio/mp4                      m4a mp4
+AddType audio/wav                      wav
+AddType audio/mpeg                     mp3
+# Video Standar
+AddType video/ogg                      ogv ogm ogg
+AddType video/mp4                      mp4 m4v f4v
+AddType video/webm                     webm
+AddType video/x-flv                    flv
+# SVG
+#   requerido para los svg webfonts en iPad
+AddType     image/svg+xml              svg svgz 
+AddEncoding gzip                       svgz
+# Webfonts                             
+#   requerido para los webfonts google y otros
+AddType application/vnd.ms-fontobject  eot
+AddType application/x-font-ttf         ttf ttc
+AddType font/opentype                  otf
+AddType application/x-font-woff        woff
+# otros Tipos                                      
+AddType image/x-icon                   ico
+AddType image/webp                     webp
+AddType text/cache-manifest            appcache manifest
+AddType text/x-component               htc
+AddType application/x-chrome-extension crx
+AddType application/x-xpinstall        xpi
+AddType application/octet-stream       safariextz
+AddType text/x-vcard                   vcf
+#Arhivos PDF
+AddType application/pdf                pdf
+#Arhivos Comprimidos
+AddType application/zip                zip 7z gz
+#Arhivos de icono
+AddType image/x-icon                   ico
+##----------------------------------------------------------
+#Definir Carateres  UTF 8
+##----------------------------------------------------------
+AddDefaultCharset utf-8
+AddCharset utf-8 .html .css .js .xml .json .rss
+##----------------------------------------------------------
+#Expirar la Cache
+##----------------------------------------------------------
+<IfModule mod_headers.c>
+Header append Cache-Control "public"
+</IfModule>
+<IfModule mod_expires.c>
+ExpiresActive on
+ExpiresDefault                          "access plus 1 month"
+ExpiresByType text/cache-manifest       "access plus 0 seconds"
+ExpiresByType text/html                 "access plus 0 seconds"
+ExpiresByType text/xml                  "access plus 0 seconds"
+ExpiresByType text/css                  "access plus 1 hour"
+ExpiresByType text/x-javascript         "access 1 month"
+ExpiresByType text/javascript           "access plus 1 months"
+ExpiresByType text/x-component          "access plus 1 month"
+ExpiresByType application/xml           "access plus 0 seconds"
+ExpiresByType application/json          "access plus 0 seconds"
+ExpiresByType application/rss+xml       "access plus 1 hour"
+ExpiresByType application/pdf           "access 1 month"
+ExpiresByType application/vnd.ms-fontobject "access plus 1 month"
+ExpiresByType application/javascript    "access plus 1 months"
+ExpiresByType application/x-shockwave-flash "access plus 1 month"
+ExpiresByType image/x-icon              "access plus 1 year"
+ExpiresByType image/gif                 "access plus 1 year"
+ExpiresByType image/png                 "access plus 1 year"
+ExpiresByType image/jpg                 "access plus 1 year"
+ExpiresByType image/jpeg                "access plus 1 year"
+ExpiresByType image/svg+xml             "access plus 1 month"
+ExpiresByType audio/ogg                 "access plus 1 month"
+ExpiresByType video/ogg                 "access plus 1 month"
+ExpiresByType video/mp4                 "access plus 1 month"
+ExpiresByType video/webm                "access plus 1 month"
+ExpiresByType font/truetype             "access plus 1 month"
+ExpiresByType font/opentype             "access plus 1 month"
+ExpiresByType font/woff                 "access plus 1 month"
+</IfModule>
+##----------------------------------------------------------
+# Forza a la ultima versión de internet explorer, en varios caos obliga almenos a el Internet Explorer 7
+##----------------------------------------------------------
+<IfModule mod_setenvif.c>
+<IfModule mod_headers.c>
+BrowserMatch MSIE ie Header set X-UA-Compatible "IE=Edge,chrome=1" env=ie
+</IfModule>
+</IfModule>
+<IfModule mod_headers.c>
+Header append Vary User-Agent
+</IfModule>
+<IfModule mod_headers.c>
+    Header set X-UA-Compatible "IE=Edge,chrome=1"
+    # mod_headers can't match by content-type, but we don't want to send this header on *everything*
+    <FilesMatch "\.(js|css|gif|png|jpe?g|pdf|xml|oga|ogg|m4a|ogv|mp4|m4v|webm|svg|svgz|eot|ttf|otf|woff|ico|webp|appcache|manifest|htc|crx|xpi|safariextz|vcf)$" >
+      Header unset X-UA-Compatible
+    </FilesMatch>
+</IfModule>
+##----------------------------------------------------------
+# Comprimir el PHP
+##----------------------------------------------------------
+#<ifmodule mod_php5.c>
+#php_value zlib.output_compression 16386
+#</ifmodule>
+##----------------------------------------------------------
+#Redirecciones
+##----------------------------------------------------------
+##----------------------------------------------------------
+#Administrador Joomla con SSL
+##----------------------------------------------------------
+#Redirect /@ http://www.cespica.com/administrator/
+#Redirect /i http://www.cespica.com/administrator/index.php?option=com_installer
+#Redirect /c http://www.cespica.com/administrator/index.php?option=com_config
+##----------------------------------------------------------
+#bloquear dominios que refieren el sitio
+##----------------------------------------------------------
+#RewriteEngine on
+#RewriteCond %{HTTP_REFERER} digg\.com [NC]
+#RewriteRule .* – [F]
+##----------------------------------------------------------
+#poner www al dominio
+##----------------------------------------------------------
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^cespica\.com$ [NC]
+RewriteRule ^(.*)$ http://www.cespica.com/$1 [R=301,L]
+##----------------------------------------------------------
+#quitar www al dominio
+##----------------------------------------------------------
+#RewriteEngine on
+#RewriteBase /
+#RewriteCond %{HTTP_HOST} ^www.cespica.com$ [NC]
+#RewriteRule (.*) http://yoursite.com/$1 [R=301,L]
+##----------------------------------------------------------
+#redireccionar a otros lugares
+##----------------------------------------------------------
+#Redirect /$carpeta http://www.cespica.com/$
+##----------------------------------------------------------
+# Compresión Gzip
+##----------------------------------------------------------
+<IfModule mod_deflate.c>
+# Forzar Encabezados a Comprimir 
+<IfModule mod_setenvif.c>
+  <IfModule mod_headers.c>
+      SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s,?\s(gzip|deflate)?|X{4,13}|~{4,13}|-{4,13})$ HAVE_Accept-Encoding
+    RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+  </IfModule>
+<IfModule !mod_filter.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/json
+  AddOutputFilterByType DEFLATE text/javascript application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE text/xml application/xml text/x-component
+</IfModule>
+<FilesMatch "\.(ttf|otf|eot|svg)$" >
+SetOutputFilter DEFLATE
+</FilesMatch>
+</IfModule>
+</IfModule>
+##----------------------------------------------------------
+#comprimir todo
+##----------------------------------------------------------
+<IfModule filter_module>
+  FilterDeclare   COMPRESS
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/html
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/css
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/plain
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/x-component
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/javascript
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/json
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/xhtml+xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/rss+xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/atom+xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/vnd.ms-fontobject
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $image/svg+xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/x-font-ttf
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $font/opentype
+  FilterChain     COMPRESS
+  FilterProtocol  COMPRESS  DEFLATE change=yes;byteranges=no
+</IfModule>
+<IfModule !mod_filter.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/json
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE text/xml application/xml text/x-component
+  AddOutputFilterByType DEFLATE application/xhtml+xml application/rss+xml application/atom+xml
+  AddOutputFilterByType DEFLATE image/svg+xml application/vnd.ms-fontobject application/x-font-ttf font/opentype
+</IfModule>
+SetOutputFilter DEFLATE
+<IfModule mod_setenvif.c>
+  <IfModule mod_headers.c>
+  # BrowserMatch MSIE ie OR?
+    BrowserMatch MSIE emulate_ie7
+  # Header set X-UA-Compatible "IE=EmulateIE7" env=ie OR?
+    Header set X-UA-Compatible "IE=EmulateIE7" env=emulate_ie7
+    BrowserMatch chromeframe gcf
+    Header append X-UA-Compatible "chrome=1" env=gcf
+  </IfModule>
+</IfModule>
